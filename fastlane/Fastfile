@@ -1,0 +1,130 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+
+	version = get_version_number_from_plist
+	build = get_build_number_from_plist
+
+	username = ENV['GITHUB_ACTOR']
+	github_token = ENV["GH_TOKEN"]
+
+
+	desc "Use Info.plist Build"
+	lane :build_number do		
+		increment_build_number_in_plist(build_number: build.to_s)
+	end
+
+
+	desc "Push a new Distribution build to the Firebase Beta"
+	lane :beta do 
+		# match adhoc Provisioning profile
+
+		if ENV['CI']
+		      create_keychain(
+			  name: "keychain",
+			  password: ENV['MATCH_PASSWORD'],
+			  default_keychain: true,
+			  unlock: true,
+			  timeout: 3600,
+			  lock_when_sleeps: false
+		      )
+		end
+
+		match(
+			type: "adhoc", 
+			git_basic_authorization: Base64.strict_encode64("#{username}:#{github_token}"),
+		  	keychain_name: "keychain",
+			keychain_password: ENV['MATCH_PASSWORD'],
+			readonly: is_ci
+		)
+
+		
+		build_number
+
+		# increase build number
+		increment_build_number_in_plist
+
+		# added badge
+		add_badge(shield: "Version-%s-orange" % version, no_badge: true)
+
+		# build App
+		build_app(scheme: "TripRoad",
+			workspace: "TripRoad.xcworkspace")
+
+		# upload firebase
+		firebase_app_distribution(
+			app: ENV['FIREBASE_APP_ID'],
+			firebase_cli_token: ENV['FIREBASE_TOKEN'],
+			release_notes: "Test"
+			)
+
+		# discard change app icon
+		path = Pathname.new(Dir.pwd).dirname
+		app_icons = Dir.glob("#{path}/**/*.appiconset/*.{png,PNG}") 
+		reset_git_repo(
+			force: true,
+			files: app_icons
+			) 
+
+
+	end
+
+	desc "Push a new release build to the App Store"
+	lane :release do 
+		# match appstore Provisioning Profile 
+		if ENV['CI']
+		      create_keychain(
+			  name: "appstore.keychain",
+			  password: ENV['MATCH_PASSWORD'],
+			  default_keychain: true,
+			  unlock: true,
+			  timeout: 3600,
+			  lock_when_sleeps: false
+		      )
+		end
+
+		match(
+			type: "appstore", 
+			git_basic_authorization: Base64.strict_encode64("#{username}:#{github_token}"),
+		  	keychain_name: "appstore.keychain",
+			keychain_password: ENV['MATCH_PASSWORD'],
+			readonly: is_ci
+		)
+		
+		build_number
+
+		# increase build number
+		increment_build_number_in_plist
+
+		# build App
+		build_app(scheme: "TripRoad",
+			workspace: "TripRoad.xcworkspace")
+
+		# upload appstore
+		deliver(
+			submit_for_review: false,
+			automatic_release: false,
+		    	force: true, # Skip HTMl report verification
+		    	skip_metadata: true,
+		    	skip_screenshots: true
+		    	)
+
+	end
+
+
+end
