@@ -21,14 +21,9 @@ jobs:
       - uses: maierj/fastlane-action@v1.4.0
         env:
           APPLE_ACCOUNT: ${{ secrets.APPLE_ACCOUNT }}
-          ITC_TEAM_ID: ${{ secrets.ITC_TEAM_ID }}
-          TEAM_ID: ${{ secrets.TEAM_ID }}
-          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
-          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
-          FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
-          MATCH_REPO: ${{ secrets.MATCH_REPO }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_REPO: ${{ secrets.MATCH_REPO }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         with:
