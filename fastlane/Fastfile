@@ -36,7 +36,6 @@ platform :ios do
 
 		if ENV['CI']
 		      create_keychain(
-			  name: "keychain",
 			  password: ENV['MATCH_PASSWORD'],
 			  default_keychain: true,
 			  unlock: true,
@@ -48,7 +47,6 @@ platform :ios do
 		match(
 			type: "adhoc", 
 			git_basic_authorization: Base64.strict_encode64("#{username}:#{github_token}"),
-		  	keychain_name: "keychain",
 			keychain_password: ENV['MATCH_PASSWORD'],
 			readonly: is_ci
 		)
@@ -89,7 +87,6 @@ platform :ios do
 		# match appstore Provisioning Profile 
 		if ENV['CI']
 		      create_keychain(
-			  name: "appstore.keychain",
 			  password: ENV['MATCH_PASSWORD'],
 			  default_keychain: true,
 			  unlock: true,
@@ -99,7 +96,6 @@ platform :ios do
 		end
 
 		match(
-			type: "appstore", 
 			git_basic_authorization: Base64.strict_encode64("#{username}:#{github_token}"),
 		  	keychain_name: "appstore.keychain",
 			keychain_password: ENV['MATCH_PASSWORD'],
